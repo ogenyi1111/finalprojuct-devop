@@ -8,7 +8,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'ikenna2025/final-project'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        DOCKER_COMPOSE_FILE = "docker-compose.${params.ENV}.yml"
         DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
         SLACK_CHANNEL = 'depos-project'
     }
@@ -35,10 +34,19 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    def tagCmd = "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    def tagProdCmd = "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:production"
+
                     if (isUnix()) {
-                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                        sh tagCmd
+                        if (params.ENV == 'production') {
+                            sh tagProdCmd
+                        }
                     } else {
-                        bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                        bat tagCmd
+                        if (params.ENV == 'production') {
+                            bat tagProdCmd
+                        }
                     }
                 }
             }
@@ -59,10 +67,19 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
+                    def pushTagCmd = "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    def pushProdCmd = "docker push ${DOCKER_IMAGE}:production"
+
                     if (isUnix()) {
-                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        sh pushTagCmd
+                        if (params.ENV == 'production') {
+                            sh pushProdCmd
+                        }
                     } else {
-                        bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        bat pushTagCmd
+                        if (params.ENV == 'production') {
+                            bat pushProdCmd
+                        }
                     }
                 }
             }
@@ -71,12 +88,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    def composeFile = "docker-compose.${params.ENV}.yml"
                     if (isUnix()) {
-                        sh "echo 'Deploying to production on Unix with port 80'"
-                        sh "docker-compose -f docker-compose.production.yml up -d"
+                        sh "echo 'Deploying to ${params.ENV} on Unix...'"
+                        sh "docker-compose -f ${composeFile} up -d"
                     } else {
-                        bat "echo 'Deploying to production on Windows with port 83'"
-                        bat "docker-compose -f docker-compose.production.yml up -d"
+                        bat "echo 'Deploying to ${params.ENV} on Windows...'"
+                        bat "docker-compose -f ${composeFile} up -d"
                     }
                 }
             }
