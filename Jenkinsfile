@@ -55,30 +55,22 @@ pipeline {
     
     post {
         success {
-            slackSend(
-                channel: "${env.SLACK_CHANNEL}",
-                color: 'good',
-                message: """
-                    *Build Status:* SUCCESS
-                    *Project:* ${env.JOB_NAME}
-                    *Build Number:* ${env.BUILD_NUMBER}
-                    *Environment:* ${params.DEPLOY_ENV}
-                    *Build URL:* ${env.BUILD_URL}
-                """
-            )
+            script {
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'good',
+                    message: "Build Status: SUCCESS\nProject: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nEnvironment: ${params.DEPLOY_ENV}\nBuild URL: ${env.BUILD_URL}"
+                )
+            }
         }
         failure {
-            slackSend(
-                channel: "${env.SLACK_CHANNEL}",
-                color: 'danger',
-                message: """
-                    *Build Status:* FAILURE
-                    *Project:* ${env.JOB_NAME}
-                    *Build Number:* ${env.BUILD_NUMBER}
-                    *Environment:* ${params.DEPLOY_ENV}
-                    *Build URL:* ${env.BUILD_URL}
-                """
-            )
+            script {
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'danger',
+                    message: "Build Status: FAILURE\nProject: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nEnvironment: ${params.DEPLOY_ENV}\nBuild URL: ${env.BUILD_URL}"
+                )
+            }
         }
     }
 }
