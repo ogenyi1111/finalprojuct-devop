@@ -7,8 +7,10 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'ikenna2025/final-project'
-        DOCKER_TAG = "${params.ENV}"
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
         DOCKER_COMPOSE_FILE = "docker-compose.${params.ENV}.yml"
+        DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+        SLACK_CHANNEL = 'depos-project'
     }
 
     stages {
@@ -18,19 +20,37 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
                 script {
-                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    if (isUnix()) {
+                        sh 'echo "Building application on Unix..."'
+                    } else {
+                        bat 'echo "Building application on Windows..."'
+                    }
                 }
             }
         }
 
-        stage('Docker Login') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                    if (isUnix()) {
+                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    } else {
+                        bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
+                    } else {
+                        bat 'echo %DOCKER_CREDENTIALS_PSW% | docker login -u %DOCKER_CREDENTIALS_USR% --password-stdin'
                     }
                 }
             }
@@ -39,7 +59,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    if (isUnix()) {
+                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    } else {
+                        bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    }
                 }
             }
         }
@@ -47,7 +71,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    bat "docker-compose -f ${DOCKER_COMPOSE_FILE} up -d"
+                    if (isUnix()) {
+                        sh "echo 'Deploying to production on Unix with port 80'"
+                        sh "docker-compose -f docker-compose.production.yml up -d"
+                    } else {
+                        bat "echo 'Deploying to production on Windows with port 83'"
+                        bat "docker-compose -f docker-compose.production.yml up -d"
+                    }
                 }
             }
         }
@@ -55,10 +85,31 @@ pipeline {
 
     post {
         always {
-            bat "docker system prune -f"
+            script {
+                if (isUnix()) {
+                    sh 'docker system prune -f'
+                } else {
+                    bat 'docker system prune -f'
+                }
+            }
+        }
+        success {
+            script {
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'good',
+                    message: "Pipeline succeeded! Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nDocker Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                )
+            }
         }
         failure {
-            echo "Build or deploy failed."
+            script {
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'danger',
+                    message: "Pipeline failed! Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nDocker Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                )
+            }
         }
     }
 }
