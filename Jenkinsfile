@@ -16,6 +16,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    env.DEPLOY_ENV = params.ENV
+                }
             }
         }
 
@@ -118,7 +121,7 @@ pipeline {
                     color: 'good',
                     message: """✅ Pipeline succeeded!
 *Job:* ${env.JOB_NAME} #${env.BUILD_NUMBER}
-*Environment:* ${params.ENV}
+*Environment:* ${env.DEPLOY_ENV}
 *Docker Image:* ${DOCKER_IMAGE}:${DOCKER_TAG}"""
                 )
             }
