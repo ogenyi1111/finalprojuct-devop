@@ -23,7 +23,11 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    bat 'echo Building application...'
+                    if (isUnix()) {
+                        sh 'echo "Building application on Unix/Linux/Mac..."'
+                    } else {
+                        bat 'echo Building application on Windows...'
+                    }
                 }
             }
         }
@@ -31,7 +35,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    bat 'echo Deploying to development...'
+                    if (isUnix()) {
+                        sh 'echo "Deploying to development on Unix/Linux/Mac..."'
+                    } else {
+                        bat 'echo Deploying to development on Windows...'
+                    }
                 }
             }
         }
@@ -43,7 +51,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: 'Build Succeeded'
+                    message: "Build Succeeded on ${isUnix() ? 'Unix/Linux/Mac' : 'Windows'}"
                 )
             }
         }
@@ -52,7 +60,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: 'Build Failed'
+                    message: "Build Failed on ${isUnix() ? 'Unix/Linux/Mac' : 'Windows'}"
                 )
             }
         }
