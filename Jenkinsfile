@@ -14,16 +14,16 @@ pipeline {
     }
     
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
         stage('Build') {
             steps {
                 script {
-                    try {
-                        echo "Building application..."
-                        // Your build steps here
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        throw e
-                    }
+                    echo 'Building application...'
                 }
             }
         }
@@ -59,7 +59,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: "Build Status: SUCCESS\nProject: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nEnvironment: ${params.DEPLOY_ENV}\nBuild URL: ${env.BUILD_URL}"
+                    message: 'Build Succeeded: Job ' + env.JOB_NAME + ' #' + env.BUILD_NUMBER
                 )
             }
         }
@@ -68,7 +68,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: "Build Status: FAILURE\nProject: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nEnvironment: ${params.DEPLOY_ENV}\nBuild URL: ${env.BUILD_URL}"
+                    message: 'Build Failed: Job ' + env.JOB_NAME + ' #' + env.BUILD_NUMBER
                 )
             }
         }
