@@ -2,11 +2,9 @@ version: '3.8'
 
 services:
   web:
-    image: ${DOCKER_IMAGE}:development
+    image: ikenna2025/final-project:development
     ports:
-      - "${NGINX_PORT}:80"
-    networks:
-      - app-network
+      - "8084:80"
     environment:
       - NODE_ENV=development
       - DEBUG=true
@@ -20,5 +18,5 @@ services:
       start_period: 40s
 
 networks:
-  app-network:
+  default:
     driver: bridge
