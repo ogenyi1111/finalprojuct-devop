@@ -1,6 +1,8 @@
 pipeline {
     agent {
-        label 'windows'
+        node {
+            label 'master'
+        }
     }
     
     environment {
