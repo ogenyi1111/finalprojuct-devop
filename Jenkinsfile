@@ -23,7 +23,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    echo 'Building application...'
+                    bat 'echo Building application...'
                 }
             }
         }
@@ -56,19 +56,21 @@ pipeline {
     post {
         success {
             script {
+                def message = "Build Succeeded"
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: 'Build Succeeded'
+                    message: message
                 )
             }
         }
         failure {
             script {
+                def message = "Build Failed"
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: 'Build Failed'
+                    message: message
                 )
             }
         }
