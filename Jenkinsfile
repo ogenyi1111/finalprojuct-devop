@@ -59,7 +59,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: 'Build Succeeded: Job ' + env.JOB_NAME + ' #' + env.BUILD_NUMBER
+                    message: 'Build Succeeded'
                 )
             }
         }
@@ -68,7 +68,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: 'Build Failed: Job ' + env.JOB_NAME + ' #' + env.BUILD_NUMBER
+                    message: 'Build Failed'
                 )
             }
         }
