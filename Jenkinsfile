@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        node {
-            label 'master'
-        }
-    }
+    agent any
     
     environment {
         DEV_PORT = '8084'
@@ -11,6 +7,7 @@ pipeline {
         DEV_NETWORK = 'dev-network'
         PROD_NETWORK = 'prod-network'
         SLACK_CHANNEL = 'depos-project'
+        IS_WINDOWS = "${isUnix() ? 'false' : 'true'}"
     }
     
     parameters {
@@ -27,7 +24,11 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    bat 'echo Building application on Windows...'
+                    if (env.IS_WINDOWS == 'true') {
+                        bat 'echo Building application on Windows...'
+                    } else {
+                        sh 'echo "Building application on Unix/Linux/Mac..."'
+                    }
                 }
             }
         }
@@ -35,7 +36,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    bat 'echo Deploying to development on Windows...'
+                    if (env.IS_WINDOWS == 'true') {
+                        bat 'echo Deploying to development on Windows...'
+                    } else {
+                        sh 'echo "Deploying to development on Unix/Linux/Mac..."'
+                    }
                 }
             }
         }
@@ -44,19 +49,21 @@ pipeline {
     post {
         success {
             script {
+                def platform = env.IS_WINDOWS == 'true' ? 'Windows' : 'Unix/Linux/Mac'
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: 'Build Succeeded on Windows'
+                    message: "Build Succeeded on ${platform}"
                 )
             }
         }
         failure {
             script {
+                def platform = env.IS_WINDOWS == 'true' ? 'Windows' : 'Unix/Linux/Mac'
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: 'Build Failed on Windows'
+                    message: "Build Failed on ${platform}"
                 )
             }
         }
