@@ -116,7 +116,10 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: "Pipeline succeeded! Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nDocker Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    message: """✅ Pipeline succeeded!
+*Job:* ${env.JOB_NAME} #${env.BUILD_NUMBER}
+*Environment:* ${params.ENV}
+*Docker Image:* ${DOCKER_IMAGE}:${DOCKER_TAG}"""
                 )
             }
         }
@@ -125,7 +128,10 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: "Pipeline failed! Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nDocker Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    message: """❌ Pipeline failed!
+*Job:* ${env.JOB_NAME} #${env.BUILD_NUMBER}
+*Environment:* ${params.ENV}
+*Docker Image:* ${DOCKER_IMAGE}:${DOCKER_TAG}"""
                 )
             }
         }
