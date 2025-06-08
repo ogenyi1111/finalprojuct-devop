@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'windows'
+    }
     
     environment {
         DEV_PORT = '8084'
@@ -23,11 +25,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh 'echo "Building application on Unix/Linux/Mac..."'
-                    } else {
-                        bat 'echo Building application on Windows...'
-                    }
+                    bat 'echo Building application on Windows...'
                 }
             }
         }
@@ -35,11 +33,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh 'echo "Deploying to development on Unix/Linux/Mac..."'
-                    } else {
-                        bat 'echo Deploying to development on Windows...'
-                    }
+                    bat 'echo Deploying to development on Windows...'
                 }
             }
         }
@@ -51,7 +45,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'good',
-                    message: "Build Succeeded on ${isUnix() ? 'Unix/Linux/Mac' : 'Windows'}"
+                    message: 'Build Succeeded on Windows'
                 )
             }
         }
@@ -60,7 +54,7 @@ pipeline {
                 slackSend(
                     channel: env.SLACK_CHANNEL,
                     color: 'danger',
-                    message: "Build Failed on ${isUnix() ? 'Unix/Linux/Mac' : 'Windows'}"
+                    message: 'Build Failed on Windows'
                 )
             }
         }
