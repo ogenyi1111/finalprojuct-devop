@@ -36,10 +36,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    def nginxPort = params.DEPLOY_ENV == 'development' ? env.DEV_PORT : env.PROD_PORT
+                    def platform = env.IS_WINDOWS == 'true' ? 'Windows' : 'Unix/Linux/Mac'
+
                     if (env.IS_WINDOWS == 'true') {
-                        bat 'echo Deploying to development on Windows...'
+                        bat "echo Deploying to ${params.DEPLOY_ENV} on ${platform} with port ${nginxPort}"
                     } else {
-                        sh 'echo "Deploying to development on Unix/Linux/Mac..."'
+                        sh "echo 'Deploying to ${params.DEPLOY_ENV} on ${platform} with port ${nginxPort}'"
                     }
                 }
             }
